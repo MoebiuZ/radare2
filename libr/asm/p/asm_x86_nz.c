@@ -308,7 +308,7 @@ static int process_group_2(RAsm *a, ut8 *data, const Opcode *op) {
 			data[l++] = 0xc1;
 		}
 	} else if (op->operands[0].type & OT_BYTE) {
-		Operand *o = &op->operands[0];
+		const Operand *o = &op->operands[0];
 		if (o->regs[0] != -1 && o->regs[1] != -1) {
 			data[l++] = 0xc0;
 			data[l++] = 0x44;
@@ -1489,15 +1489,17 @@ static int opmov(RAsm *a, ut8 *data, const Opcode *op) {
 				}
 			}
 		} else if (op->operands[0].type & OT_MEMORY) {
+			if (!op->operands[0].explicit_size) {
+				if (op->operands[0].type & OT_GPREG) {
+					((Opcode *)op)->operands[0].dest_size = op->operands[0].reg_size;
+				} else {
+					return -1;
+				}
+			}
+
 			int dest_bits = 8 * ((op->operands[0].dest_size & ALL_SIZE) >> OPSIZE_SHIFT);
 			int reg_bits = 8 * ((op->operands[0].reg_size & ALL_SIZE) >> OPSIZE_SHIFT);
 			int offset = op->operands[0].offset * op->operands[0].offset_sign;
-
-			if (!op->operands[0].explicit_size) {
-				//dest_bits = op->operands[0].type;
-				//we can use the previous line if we prefer to have a default behavior instead of an error
-				return -1;
-			}
 
                         //addr_size_override prefix
 			bool use_aso = false;

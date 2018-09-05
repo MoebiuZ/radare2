@@ -118,6 +118,7 @@ static int vtable_is_addr_vtable_start(RVTableContext *context, ut64 curAddress)
 			if (analop.type == R_ANAL_OP_TYPE_MOV
 				|| analop.type == R_ANAL_OP_TYPE_LEA) {
 				r_list_free (xrefs);
+				r_anal_op_fini (&analop);
 				return true;
 			}
 
@@ -198,7 +199,7 @@ R_API RList *r_anal_vtable_search(RVTableContext *context) {
 
 			if (vtable_is_addr_vtable_start (context, startAddress)) {
 				RVTableInfo *vtable = r_anal_vtable_parse_at (context, startAddress);
-				if (vtable && vtable->methods.len > 0) {
+				if (vtable) {
 					r_list_append (vtables, vtable);
 					ut64 size = r_anal_vtable_info_get_size (context, vtable);
 					if (size > 0) {
